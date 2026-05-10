@@ -146,13 +146,16 @@ class _LevelCell extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(
-              '$levelId',
-              style: AppTextStyles.title(
-                size: 28,
-                color: isCompleted ? AppColors.accent : AppColors.white,
+            if (!unlocked)
+              const Icon(Icons.lock, color: AppColors.greyDark, size: 22)
+            else
+              Text(
+                '$levelId',
+                style: AppTextStyles.title(
+                  size: 28,
+                  color: isCompleted ? AppColors.accent : AppColors.white,
+                ),
               ),
-            ),
           ],
         ),
       ),

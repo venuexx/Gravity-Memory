@@ -45,7 +45,7 @@ class SaveService extends ChangeNotifier {
   int get totalStars => _levelStars.values.fold(0, (a, b) => a + b);
 
   int starsForLevel(int levelId) => _levelStars[levelId] ?? 0;
-  bool isUnlocked(int levelId) => true;
+  bool isUnlocked(int levelId) => _unlockedLevels.contains(levelId);
 
   Future<void> init() async {
     if (_initialized) return;
@@ -72,7 +72,7 @@ class SaveService extends ChangeNotifier {
             .toList() ??
         [0];
 
-    for (int i = 1; i <= 20; i++) {
+    for (int i = 1; i <= 100; i++) {
       final stars = _prefs.getInt('$_prefStars$i') ?? 0;
       if (stars > 0) _levelStars[i] = stars;
       if (_prefs.getBool('$_prefUnlocked$i') == true) {
@@ -89,7 +89,7 @@ class SaveService extends ChangeNotifier {
     }
 
     // Unlock next
-    if (levelId < 20) {
+    if (levelId < 100) {
       _unlockedLevels.add(levelId + 1);
       await _prefs.setBool('$_prefUnlocked${levelId + 1}', true);
     }
