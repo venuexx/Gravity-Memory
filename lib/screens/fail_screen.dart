@@ -1,10 +1,83 @@
 import 'package:flutter/material.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import '../core/constants.dart';
+import '../core/ad_service.dart';
 import '../widgets/gm_button.dart';
 
-class FailScreen extends StatelessWidget {
+class FailScreen extends StatefulWidget {
   final int levelId;
-  const FailScreen({super.key, required this.levelId});
+  final int resumeRow;
+  final int resumeCol;
+  final int resumeTime;
+  final int resumeMoves;
+  const FailScreen({
+    super.key,
+    required this.levelId,
+    required this.resumeRow,
+    required this.resumeCol,
+    required this.resumeTime,
+    required this.resumeMoves,
+  });
+
+  @override
+  State<FailScreen> createState() => _FailScreenState();
+}
+
+class _FailScreenState extends State<FailScreen> {
+  RewardedAd? _rewardedAd;
+  bool _adLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Önceden yüklenmiş reklamı kullan
+    _rewardedAd = AdService.instance.rewardedAd;
+  }
+
+  void _watchAd() {
+    final ad = _rewardedAd;
+    if (ad == null) return;
+    setState(() => _adLoading = true);
+    bool _earned = false;
+    ad.fullScreenContentCallback = FullScreenContentCallback(
+      onAdDismissedFullScreenContent: (a) {
+        a.dispose();
+        AdService.instance.rewardedAd = null;
+        AdService.instance.preload(); // Sonraki oyun için yeni reklam yükle
+        if (!mounted) return;
+        if (_earned) {
+          Navigator.pushReplacementNamed(
+            context,
+            AppRoutes.game,
+            arguments: {
+              'levelId': widget.levelId,
+              'resumeRow': widget.resumeRow,
+              'resumeCol': widget.resumeCol,
+              'resumeTime': widget.resumeTime,
+              'resumeMoves': widget.resumeMoves,
+            },
+          );
+        } else {
+          setState(() { _rewardedAd = null; _adLoading = false; });
+        }
+      },
+      onAdFailedToShowFullScreenContent: (a, _) {
+        a.dispose();
+        if (mounted) setState(() { _rewardedAd = null; _adLoading = false; });
+      },
+    );
+    ad.show(
+      onUserEarnedReward: (_, __) {
+        _earned = true;
+      },
+    );
+  }
+
+  @override
+  void dispose() {
+    // Reklam AdService'e ait, burada dispose etme
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -35,23 +108,18 @@ class FailScreen extends StatelessWidget {
                 onTap: () => Navigator.pushReplacementNamed(
                   context,
                   AppRoutes.game,
-                  arguments: levelId,
+                  arguments: widget.levelId,
                 ),
               ),
-              const SizedBox(height: 14),
-              GmButton(
-                label: 'WATCH AD · CONTINUE',
-                icon: Icons.play_circle_outline,
-                filled: false,
-                onTap: () {
-                  // Reklam sistemi ileride eklenecek
-                  Navigator.pushReplacementNamed(
-                    context,
-                    AppRoutes.game,
-                    arguments: levelId,
-                  );
-                },
-              ),
+              if (_rewardedAd != null) ...[
+                const SizedBox(height: 14),
+                GmButton(
+                  label: _adLoading ? 'LOADING...' : 'WATCH AD & CONTINUE',
+                  icon: Icons.play_circle_outline,
+                  filled: false,
+                  onTap: _adLoading ? () {} : _watchAd,
+                ),
+              ],
               const SizedBox(height: 14),
               GmButton(
                 label: 'HOME',

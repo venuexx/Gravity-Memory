@@ -6,12 +6,25 @@ import 'package:provider/provider.dart';
 import '../core/constants.dart';
 import '../core/game_data.dart';
 import '../core/save_service.dart';
+import '../core/ad_service.dart';
+import '../widgets/ad_banner_widget.dart';
 
 enum GamePhase { memorize, playing, paused }
 
 class GameScreen extends StatefulWidget {
   final int levelId;
-  const GameScreen({super.key, required this.levelId});
+  final int? resumeRow;
+  final int? resumeCol;
+  final int? resumeTime;
+  final int? resumeMoves;
+  const GameScreen({
+    super.key,
+    required this.levelId,
+    this.resumeRow,
+    this.resumeCol,
+    this.resumeTime,
+    this.resumeMoves,
+  });
 
   @override
   State<GameScreen> createState() => _GameScreenState();
@@ -34,9 +47,17 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
   void initState() {
     super.initState();
     _level = kAllLevels.firstWhere((l) => l.id == widget.levelId);
-    final (sr, sc) = _level.startPos;
-    _playerRow = sr;
-    _playerCol = sc;
+    final bool isResume = widget.resumeRow != null;
+    if (isResume) {
+      _playerRow = widget.resumeRow!;
+      _playerCol = widget.resumeCol!;
+      _elapsedSeconds = widget.resumeTime!;
+      _moves = widget.resumeMoves!;
+    } else {
+      final (sr, sc) = _level.startPos;
+      _playerRow = sr;
+      _playerCol = sc;
+    }
     _memorizeCountdown = 3;
     _phase = GamePhase.memorize;
     _flashController = AnimationController(
@@ -48,6 +69,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
       duration: const Duration(milliseconds: 500),
     );
     _startMemorizeTimer();
+    AdService.instance.preload();
   }
 
   void _startMemorizeTimer() {
@@ -72,14 +94,29 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
         setState(() => _elapsedSeconds--);
         if (_elapsedSeconds <= 0) {
           t.cancel();
-          Navigator.pushReplacementNamed(
-            context,
-            AppRoutes.fail,
-            arguments: widget.levelId,
-          );
+          _showFailed();
         }
       });
     });
+  }
+
+  void _showFailed() {
+    if (!mounted) return;
+    _goToFail();
+  }
+
+  void _goToFail() {
+    Navigator.pushReplacementNamed(
+      context,
+      AppRoutes.fail,
+      arguments: {
+        'levelId': widget.levelId,
+        'resumeRow': _playerRow,
+        'resumeCol': _playerCol,
+        'resumeTime': _elapsedSeconds,
+        'resumeMoves': _moves,
+      },
+    );
   }
 
   void _move(int dRow, int dCol) {
@@ -98,11 +135,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
       _timer?.cancel();
       Future.delayed(const Duration(milliseconds: 400), () {
         if (!mounted) return;
-        Navigator.pushReplacementNamed(
-          context,
-          AppRoutes.fail,
-          arguments: widget.levelId,
-        );
+        _showFailed();
       });
       return;
     }
@@ -224,6 +257,10 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
               Padding(
                 padding: const EdgeInsets.only(bottom: 64),
                 child: _DPad(onMove: _move),
+              ),
+              const SizedBox(
+                height: 50,
+                child: Center(child: AdBannerWidget()),
               ),
             ],
           ),

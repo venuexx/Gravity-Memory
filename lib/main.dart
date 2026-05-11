@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'core/constants.dart';
 import 'core/save_service.dart';
 import 'screens/main_menu_screen.dart';
@@ -10,9 +11,11 @@ import 'screens/fail_screen.dart';
 import 'screens/settings_screen.dart';
 import 'screens/shop_screen.dart';
 import 'screens/leaderboard_screen.dart';
+import 'widgets/ad_banner_widget.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  MobileAds.instance.initialize();
   final saveService = SaveService();
   await saveService.init();
   runApp(
@@ -41,6 +44,7 @@ class GravityMemoryApp extends StatelessWidget {
         fontFamily: 'RobotoMono',
       ),
       initialRoute: AppRoutes.mainMenu,
+      navigatorObservers: [AdBannerWidget.routeObserver],
       routes: {
         AppRoutes.mainMenu: (_) => const MainMenuScreen(),
         AppRoutes.levelSelect: (_) => const LevelSelectScreen(),
@@ -50,9 +54,20 @@ class GravityMemoryApp extends StatelessWidget {
       },
       onGenerateRoute: (settings) {
         if (settings.name == AppRoutes.game) {
-          final levelId = settings.arguments as int;
+          final args = settings.arguments;
+          if (args is Map<String, dynamic>) {
+            return MaterialPageRoute(
+              builder: (_) => GameScreen(
+                levelId: args['levelId'] as int,
+                resumeRow: args['resumeRow'] as int?,
+                resumeCol: args['resumeCol'] as int?,
+                resumeTime: args['resumeTime'] as int?,
+                resumeMoves: args['resumeMoves'] as int?,
+              ),
+            );
+          }
           return MaterialPageRoute(
-            builder: (_) => GameScreen(levelId: levelId),
+            builder: (_) => GameScreen(levelId: args as int),
           );
         }
         if (settings.name == AppRoutes.success) {
@@ -66,9 +81,15 @@ class GravityMemoryApp extends StatelessWidget {
           );
         }
         if (settings.name == AppRoutes.fail) {
-          final levelId = settings.arguments as int;
+          final args = settings.arguments as Map<String, dynamic>;
           return MaterialPageRoute(
-            builder: (_) => FailScreen(levelId: levelId),
+            builder: (_) => FailScreen(
+              levelId: args['levelId'] as int,
+              resumeRow: args['resumeRow'] as int,
+              resumeCol: args['resumeCol'] as int,
+              resumeTime: args['resumeTime'] as int,
+              resumeMoves: args['resumeMoves'] as int,
+            ),
           );
         }
         return null;

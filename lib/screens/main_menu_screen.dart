@@ -5,6 +5,7 @@ import '../core/game_data.dart';
 import '../core/save_service.dart';
 import '../widgets/gm_button.dart';
 import '../widgets/logo_widget.dart';
+import '../widgets/ad_banner_widget.dart';
 
 class MainMenuScreen extends StatelessWidget {
   const MainMenuScreen({super.key});
@@ -19,6 +20,10 @@ class MainMenuScreen extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 40),
           child: Column(
             children: [
+              const SizedBox(
+                height: 50,
+                child: Center(child: AdBannerWidget()),
+              ),
               const Spacer(flex: 3),
               const LogoWidget(),
               const Spacer(flex: 2),
