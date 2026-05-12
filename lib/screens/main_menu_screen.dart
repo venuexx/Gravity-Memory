@@ -3,12 +3,44 @@ import 'package:provider/provider.dart';
 import '../core/constants.dart';
 import '../core/game_data.dart';
 import '../core/save_service.dart';
+import '../core/music_service.dart';
 import '../widgets/gm_button.dart';
 import '../widgets/logo_widget.dart';
 import '../widgets/ad_banner_widget.dart';
 
-class MainMenuScreen extends StatelessWidget {
+class MainMenuScreen extends StatefulWidget {
   const MainMenuScreen({super.key});
+
+  @override
+  State<MainMenuScreen> createState() => _MainMenuScreenState();
+}
+
+class _MainMenuScreenState extends State<MainMenuScreen> with RouteAware {
+  @override
+  void initState() {
+    super.initState();
+    MusicService.instance.playMenu();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final route = ModalRoute.of(context);
+    if (route != null) {
+      AdBannerWidget.routeObserver.subscribe(this, route);
+    }
+  }
+
+  @override
+  void didPopNext() {
+    MusicService.instance.playMenu();
+  }
+
+  @override
+  void dispose() {
+    AdBannerWidget.routeObserver.unsubscribe(this);
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {

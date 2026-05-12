@@ -7,6 +7,7 @@ import '../core/constants.dart';
 import '../core/game_data.dart';
 import '../core/save_service.dart';
 import '../core/ad_service.dart';
+import '../core/music_service.dart';
 import '../widgets/ad_banner_widget.dart';
 
 enum GamePhase { memorize, playing, paused }
@@ -70,6 +71,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     );
     _startMemorizeTimer();
     AdService.instance.preload();
+    MusicService.instance.setVolume(0.30);
   }
 
   void _startMemorizeTimer() {
@@ -88,6 +90,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
       if (!mounted) return;
       setState(() => _phase = GamePhase.playing);
       _transitionController.reverse();
+      MusicService.instance.startTimer();
       _timer = Timer.periodic(const Duration(seconds: 1), (t) {
         if (!mounted) return;
         if (_phase != GamePhase.playing) return;
@@ -102,6 +105,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
 
   void _showFailed() {
     if (!mounted) return;
+    MusicService.instance.stopTimer();
     _goToFail();
   }
 
@@ -157,6 +161,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
       context.read<SaveService>().saveLevel(widget.levelId, stars, coins);
       Future.delayed(const Duration(milliseconds: 200), () {
         if (!mounted) return;
+        MusicService.instance.stopTimer();
         Navigator.pushReplacementNamed(
           context,
           AppRoutes.success,
@@ -186,6 +191,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     _timer?.cancel();
     _flashController.dispose();
     _transitionController.dispose();
+    MusicService.instance.setVolume(0.75);
     super.dispose();
   }
 
