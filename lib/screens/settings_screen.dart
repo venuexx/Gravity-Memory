@@ -44,6 +44,35 @@ class SettingsScreen extends StatelessWidget {
                 }
               },
             ),
+            const SizedBox(height: 12),
+            _PrivacyLink(),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _PrivacyLink extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: TextButton(
+        onPressed: () => Navigator.pushNamed(context, AppRoutes.privacy),
+        style: TextButton.styleFrom(
+          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+          minimumSize: const Size(0, 32),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.shield_outlined, size: 14, color: AppColors.grey.withAlpha(160)),
+            const SizedBox(width: 6),
+            Text(
+              'Privacy Policy',
+              style: AppTextStyles.label(size: 12, color: AppColors.grey.withAlpha(160)),
+            ),
           ],
         ),
       ),

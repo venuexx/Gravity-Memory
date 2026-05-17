@@ -19,6 +19,7 @@ class AdBannerWidget extends StatefulWidget {
 
 class _AdBannerWidgetState extends State<AdBannerWidget> with RouteAware {
   BannerAd? _ad;
+  BannerAd? _loadingAd;
   bool _loaded = false;
   Timer? _retryTimer;
 
@@ -39,14 +40,12 @@ class _AdBannerWidgetState extends State<AdBannerWidget> with RouteAware {
 
   @override
   void didPopNext() {
-    // Başka ekrandan bu ekrana geri dönüldüğünde yeniden yükle
     _loadAd();
   }
 
   void _loadAd() {
+    if (_loadingAd != null) return;
     _retryTimer?.cancel();
-    _ad?.dispose();
-    if (mounted) setState(() { _loaded = false; _ad = null; });
 
     final ad = BannerAd(
       adUnitId: _bannerAdUnitId,
@@ -54,18 +53,28 @@ class _AdBannerWidgetState extends State<AdBannerWidget> with RouteAware {
       request: const AdRequest(),
       listener: BannerAdListener(
         onAdLoaded: (loadedAd) {
+          final newAd = loadedAd as BannerAd;
+          if (!mounted) { newAd.dispose(); return; }
           debugPrint('AdBanner: loaded');
-          if (mounted) setState(() { _ad = loadedAd as BannerAd; _loaded = true; });
+          _ad?.dispose();
+          setState(() {
+            _ad = newAd;
+            _loaded = true;
+            _loadingAd = null;
+          });
         },
         onAdFailedToLoad: (failedAd, error) {
-          debugPrint('AdBanner: failed to load — ${error.message}');
           failedAd.dispose();
           if (!mounted) return;
-          setState(() { _ad = null; _loaded = false; });
-          _retryTimer = Timer(const Duration(seconds: 30), _loadAd);
+          debugPrint('AdBanner: failed to load — ${error.message}');
+          setState(() { _loadingAd = null; });
+          if (_ad == null) {
+            _retryTimer = Timer(const Duration(seconds: 30), _loadAd);
+          }
         },
       ),
     );
+    _loadingAd = ad;
     ad.load();
   }
 
@@ -73,6 +82,7 @@ class _AdBannerWidgetState extends State<AdBannerWidget> with RouteAware {
   void dispose() {
     _retryTimer?.cancel();
     AdBannerWidget.routeObserver.unsubscribe(this);
+    _loadingAd?.dispose();
     _ad?.dispose();
     super.dispose();
   }

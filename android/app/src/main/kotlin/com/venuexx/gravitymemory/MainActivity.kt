@@ -1,4 +1,4 @@
-package com.venuex.gravity_memory
+package com.venuexx.gravitymemory
 
 import io.flutter.embedding.android.FlutterActivity
 

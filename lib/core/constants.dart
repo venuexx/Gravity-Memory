@@ -67,6 +67,7 @@ class AppRoutes {
   static const String success = '/success';
   static const String fail = '/fail';
   static const String settings = '/settings';
+  static const String privacy = '/privacy';
   static const String shop = '/shop';
   static const String leaderboard = '/leaderboard';
 }

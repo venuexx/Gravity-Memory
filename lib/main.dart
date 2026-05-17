@@ -11,6 +11,7 @@ import 'screens/success_screen.dart';
 import 'screens/fail_screen.dart';
 import 'screens/settings_screen.dart';
 import 'screens/splash_screen.dart';
+import 'screens/privacy_screen.dart';
 import 'widgets/ad_banner_widget.dart';
 
 void main() async {
@@ -51,6 +52,7 @@ class GravityMemoryApp extends StatelessWidget {
         AppRoutes.mainMenu: (_) => const MainMenuScreen(),
         AppRoutes.levelSelect: (_) => const LevelSelectScreen(),
         AppRoutes.settings: (_) => const SettingsScreen(),
+        AppRoutes.privacy: (_) => const PrivacyScreen(),
       },
       onGenerateRoute: (settings) {
         if (settings.name == AppRoutes.game) {
