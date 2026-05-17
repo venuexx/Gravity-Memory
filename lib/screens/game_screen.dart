@@ -134,6 +134,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
 
     final cell = _level.grid[nr][nc];
     if (cell == 0) {
+      MusicService.instance.playBurn();
       _flashController.forward(from: 0);
       HapticFeedback.heavyImpact();
       _timer?.cancel();
@@ -144,6 +145,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
       return;
     }
 
+    MusicService.instance.playMove();
     final prevRow = _playerRow;
     final prevCol = _playerCol;
     setState(() {
@@ -154,11 +156,9 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     });
 
     if (cell == 3) {
-      // Çıkışa ulaştı
       _timer?.cancel();
-      final stars = _calcStars();
-      final coins = stars * 50;
-      context.read<SaveService>().saveLevel(widget.levelId, stars, coins);
+      MusicService.instance.playSuccess();
+      context.read<SaveService>().saveLevel(widget.levelId);
       Future.delayed(const Duration(milliseconds: 200), () {
         if (!mounted) return;
         MusicService.instance.stopTimer();
@@ -167,7 +167,6 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
           AppRoutes.success,
           arguments: {
             'levelId': widget.levelId,
-            'stars': stars,
             'timeSeconds': 20 - _elapsedSeconds,
             'moves': _moves,
           },
@@ -176,19 +175,21 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     }
   }
 
-  int _calcStars() => 1;
-
   void _togglePause() {
-    setState(() {
-      _phase =
-          _phase == GamePhase.paused ? GamePhase.playing : GamePhase.paused;
-    });
+    if (_phase == GamePhase.paused) {
+      MusicService.instance.resumeTimer();
+      setState(() => _phase = GamePhase.playing);
+    } else {
+      MusicService.instance.pauseTimer();
+      setState(() => _phase = GamePhase.paused);
+    }
   }
 
 
   @override
   void dispose() {
     _timer?.cancel();
+    MusicService.instance.stopTimer();
     _flashController.dispose();
     _transitionController.dispose();
     MusicService.instance.setVolume(0.75);

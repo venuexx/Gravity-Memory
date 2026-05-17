@@ -82,11 +82,11 @@ class LevelSelectScreen extends StatelessWidget {
                 itemBuilder: (_, i) {
                   final level = kAllLevels[i];
                   final unlocked = save.isUnlocked(level.id);
-                  final stars = save.starsForLevel(level.id);
+                  final completed = save.isCompleted(level.id);
                   return _LevelCell(
                     levelId: level.id,
                     unlocked: unlocked,
-                    stars: stars,
+                    completed: completed,
                     onTap: unlocked
                         ? () => Navigator.pushNamed(
                               context,
@@ -108,19 +108,19 @@ class LevelSelectScreen extends StatelessWidget {
 class _LevelCell extends StatelessWidget {
   final int levelId;
   final bool unlocked;
-  final int stars;
+  final bool completed;
   final VoidCallback? onTap;
 
   const _LevelCell({
     required this.levelId,
     required this.unlocked,
-    required this.stars,
+    required this.completed,
     this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    final isCompleted = stars > 0;
+    final isCompleted = completed;
 
     return GestureDetector(
       onTap: onTap,

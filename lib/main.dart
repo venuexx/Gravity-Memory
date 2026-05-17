@@ -3,21 +3,22 @@ import 'package:provider/provider.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'core/constants.dart';
 import 'core/save_service.dart';
+import 'core/music_service.dart';
 import 'screens/main_menu_screen.dart';
 import 'screens/level_select_screen.dart';
 import 'screens/game_screen.dart';
 import 'screens/success_screen.dart';
 import 'screens/fail_screen.dart';
 import 'screens/settings_screen.dart';
-import 'screens/shop_screen.dart';
-import 'screens/leaderboard_screen.dart';
+import 'screens/splash_screen.dart';
 import 'widgets/ad_banner_widget.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  MobileAds.instance.initialize();
+  await MobileAds.instance.initialize();
   final saveService = SaveService();
   await saveService.init();
+  MusicService.instance.syncSettings(saveService);
   runApp(
     ChangeNotifierProvider.value(
       value: saveService,
@@ -43,14 +44,13 @@ class GravityMemoryApp extends StatelessWidget {
         ),
         fontFamily: 'RobotoMono',
       ),
-      initialRoute: AppRoutes.mainMenu,
+      initialRoute: AppRoutes.splash,
       navigatorObservers: [AdBannerWidget.routeObserver],
       routes: {
+        AppRoutes.splash: (_) => const SplashScreen(),
         AppRoutes.mainMenu: (_) => const MainMenuScreen(),
         AppRoutes.levelSelect: (_) => const LevelSelectScreen(),
         AppRoutes.settings: (_) => const SettingsScreen(),
-        AppRoutes.shop: (_) => const ShopScreen(),
-        AppRoutes.leaderboard: (_) => const LeaderboardScreen(),
       },
       onGenerateRoute: (settings) {
         if (settings.name == AppRoutes.game) {

@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'package:audioplayers/audioplayers.dart';
+import 'save_service.dart';
 
 class MusicService {
   MusicService._();
@@ -7,7 +8,17 @@ class MusicService {
 
   final AudioPlayer _player = AudioPlayer();
   final AudioPlayer _timerPlayer = AudioPlayer();
+  final AudioPlayer _swipePlayer = AudioPlayer();
+  final AudioPlayer _successPlayer = AudioPlayer();
   final _random = Random();
+
+  bool soundEnabled = true;
+  bool musicEnabled = true;
+
+  void syncSettings(SaveService save) {
+    soundEnabled = save.sound;
+    musicEnabled = save.music;
+  }
 
   static const List<String> _tracks = [
     'assets/music/track_1.mp3',
@@ -23,9 +34,17 @@ class MusicService {
     _initialized = true;
     await _player.setReleaseMode(ReleaseMode.loop);
     await _timerPlayer.setReleaseMode(ReleaseMode.loop);
+
+    final noFocusCtx = AudioContext(
+      android: AudioContextAndroid(audioFocus: AndroidAudioFocus.none),
+    );
+    await _timerPlayer.setAudioContext(noFocusCtx);
+    await _swipePlayer.setAudioContext(noFocusCtx);
+    await _successPlayer.setAudioContext(noFocusCtx);
   }
 
   Future<void> playMenu() async {
+    if (!musicEnabled) return;
     await init();
     await stopTimer();
     final track = _tracks[_random.nextInt(_tracks.length)];
@@ -34,6 +53,7 @@ class MusicService {
   }
 
   Future<void> playGame() async {
+    if (!musicEnabled) return;
     await init();
     await _player.setVolume(0.30);
     final state = _player.state;
@@ -44,12 +64,26 @@ class MusicService {
   }
 
   Future<void> startTimer() async {
+    if (!soundEnabled) return;
     await init();
     await _timerPlayer.play(AssetSource('music/timer.mp3'));
   }
 
   Future<void> stopTimer() async {
     await _timerPlayer.stop();
+  }
+
+  Future<void> playMove() async {
+    if (!soundEnabled) return;
+    await _swipePlayer.stop();
+    await _swipePlayer.setVolume(0.7);
+    await _swipePlayer.play(AssetSource('music/swipe1.mp3'));
+  }
+
+  Future<void> playBurn() async {
+    if (!soundEnabled) return;
+    await _swipePlayer.stop();
+    await _swipePlayer.play(AssetSource('music/swipe2.mp3'));
   }
 
   Future<void> setVolume(double volume) async {
@@ -66,5 +100,19 @@ class MusicService {
 
   Future<void> resume() async {
     await _player.resume();
+  }
+
+  Future<void> playSuccess() async {
+    if (!soundEnabled) return;
+    await _successPlayer.stop();
+    await _successPlayer.play(AssetSource('music/success.mp3'));
+  }
+
+  Future<void> pauseTimer() async {
+    await _timerPlayer.pause();
+  }
+
+  Future<void> resumeTimer() async {
+    await _timerPlayer.resume();
   }
 }

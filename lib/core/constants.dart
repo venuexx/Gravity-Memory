@@ -60,6 +60,7 @@ class AppDimensions {
 }
 
 class AppRoutes {
+  static const String splash = '/splash';
   static const String mainMenu = '/';
   static const String levelSelect = '/level-select';
   static const String game = '/game';

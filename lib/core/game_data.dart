@@ -34,26 +34,6 @@ class LevelData {
   }
 }
 
-class LevelResult {
-  final int levelId;
-  final int stars; // 1-3
-  final int timeSeconds;
-  final int moves;
-
-  const LevelResult({
-    required this.levelId,
-    required this.stars,
-    required this.timeSeconds,
-    required this.moves,
-  });
-
-  int get score {
-    final timeBonus = (300 - timeSeconds).clamp(0, 300);
-    final moveBonus = (200 - moves).clamp(0, 200);
-    return stars * 500 + timeBonus + moveBonus;
-  }
-}
-
 // 40 level tanımı
 const List<LevelData> kAllLevels = [
   // Level 1 - 5x5 basit L

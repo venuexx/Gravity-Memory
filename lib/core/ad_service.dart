@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 class AdService {
@@ -23,7 +24,8 @@ class AdService {
           rewardedAd = ad;
           _loading = false;
         },
-        onAdFailedToLoad: (_) {
+        onAdFailedToLoad: (error) {
+          debugPrint('AdService: rewarded ad failed to load — ${error.message}');
           rewardedAd = null;
           _loading = false;
         },

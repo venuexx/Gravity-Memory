@@ -156,11 +156,11 @@ class _MazeIconState extends State<_MazeIcon> {
 
                     return Padding(
                       padding: EdgeInsets.only(left: c == 0 ? 0 : gap),
-                      child: AnimatedScale(
-                        scale: (isActive && !isYellow) ? 1.25 : 1.0,
-                        duration: const Duration(milliseconds: 300),
+                      child: AnimatedOpacity(
+                        opacity: (!isLit || isYellow) ? 1.0 : (isActive ? 1.0 : 0.35),
+                        duration: const Duration(milliseconds: 600),
                         child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 300),
+                          duration: const Duration(milliseconds: 600),
                           width: cell,
                           height: cell,
                           decoration: BoxDecoration(

@@ -53,20 +53,20 @@ class _AdBannerWidgetState extends State<AdBannerWidget> with RouteAware {
       size: AdSize.banner,
       request: const AdRequest(),
       listener: BannerAdListener(
-        onAdLoaded: (_) {
-          if (mounted) setState(() => _loaded = true);
+        onAdLoaded: (loadedAd) {
+          debugPrint('AdBanner: loaded');
+          if (mounted) setState(() { _ad = loadedAd as BannerAd; _loaded = true; });
         },
-        onAdFailedToLoad: (failedAd, _) {
+        onAdFailedToLoad: (failedAd, error) {
+          debugPrint('AdBanner: failed to load — ${error.message}');
           failedAd.dispose();
           if (!mounted) return;
           setState(() { _ad = null; _loaded = false; });
-          // 5 saniye sonra tekrar dene
-          _retryTimer = Timer(const Duration(seconds: 5), _loadAd);
+          _retryTimer = Timer(const Duration(seconds: 30), _loadAd);
         },
       ),
     );
     ad.load();
-    if (mounted) setState(() => _ad = ad);
   }
 
   @override
